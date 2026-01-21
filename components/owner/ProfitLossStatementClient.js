@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Download, TrendingUp, TrendingDown } from 'lucide-react';
 import { toast } from 'react-toastify';
 import UIButton from '@/components/ui/UIButton';
@@ -13,7 +13,7 @@ export default function ProfitLossStatementClient() {
   const [profitLossData, setProfitLossData] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const fetchProfitLossData = async () => {
+  const fetchProfitLossData = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch(`/api/owner/profit-loss?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`);
@@ -27,11 +27,11 @@ export default function ProfitLossStatementClient() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dateRange.startDate, dateRange.endDate]);
 
   useEffect(() => {
     fetchProfitLossData();
-  }, [dateRange, fetchProfitLossData]);
+  }, [fetchProfitLossData]);
 
   const handleExportPDF = async () => {
     try {
