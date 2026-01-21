@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { 
   ShoppingBag, 
   Star, 
@@ -53,14 +54,14 @@ export default function ShopHomepage({ searchParams }) {
 
   useEffect(() => {
     fetchData();
-  }, [selectedCategory, searchTerm]);
+  }, [selectedCategory, searchTerm, fetchData]);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [heroSlides.length]);
 
   const fetchData = async () => {
     try {
@@ -336,9 +337,11 @@ function ProductCard({ product, onAddToCart, onAddToWishlist, formatPrice }) {
   return (
     <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden group">
       <div className="relative">
-        <img
+        <Image
           src={product.image || '/api/placeholder/300/200'}
           alt={product.name}
+          width={300}
+          height={192}
           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
         />
         <button

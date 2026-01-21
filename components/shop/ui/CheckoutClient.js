@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { 
   ArrowRight,
@@ -502,9 +503,11 @@ export default function CheckoutClient() {
             <div className="space-y-3 mb-6">
               {cartItems.map((item) => (
                 <div key={item.item._id} className="flex items-center gap-3">
-                  <img
+                  <Image
                     src={item.item.image || '/api/placeholder/50/50'}
                     alt={item.item.name}
+                    width={48}
+                    height={48}
                     className="w-12 h-12 object-cover rounded"
                   />
                   <div className="flex-1">

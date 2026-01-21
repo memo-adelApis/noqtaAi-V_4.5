@@ -31,7 +31,7 @@ export default function ProfitLossStatementClient() {
 
   useEffect(() => {
     fetchProfitLossData();
-  }, [dateRange]);
+  }, [dateRange, fetchProfitLossData]);
 
   const handleExportPDF = async () => {
     try {

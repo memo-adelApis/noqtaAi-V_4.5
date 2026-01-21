@@ -5,6 +5,7 @@ import {
     ExternalLink, MapPin, Phone, Globe, Layers, ArrowRight 
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 export default function DeveloperPage() {
@@ -85,9 +86,11 @@ export default function DeveloperPage() {
                     <div className="relative z-10">
                         <div className="w-48 h-48 md:w-64 md:h-64 rounded-full p-1 bg-gradient-to-br from-blue-500 to-emerald-500 shadow-2xl shadow-blue-500/20 mx-auto animate-pulse-slow">
                             <div className="w-full h-full rounded-full overflow-hidden bg-[#1c1d22] relative">
-                                <img 
+                                <Image 
                                     src="https://ui-avatars.com/api/?name=Mahmoud+Adel&background=0D8ABC&color=fff&size=256&font-size=0.33" 
                                     alt="Mahmoud Adel" 
+                                    width={256}
+                                    height={256}
                                     className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
                                 />
                             </div>

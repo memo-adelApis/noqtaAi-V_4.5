@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
   Trash2, 
   Plus, 
@@ -203,9 +204,11 @@ export default function CartClient() {
             {cartItems.map((item, index) => (
               <div key={item.item._id} className={`p-6 ${index !== cartItems.length - 1 ? 'border-b' : ''}`}>
                 <div className="flex gap-4">
-                  <img
+                  <Image
                     src={item.item.image || '/api/placeholder/100/100'}
                     alt={item.item.name}
+                    width={80}
+                    height={80}
                     className="w-20 h-20 object-cover rounded-lg"
                   />
                   
