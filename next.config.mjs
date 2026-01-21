@@ -3,9 +3,7 @@ const nextConfig = {
     reactStrictMode: true,
     
     // تحسينات البناء
-    experimental: {
-        serverComponentsExternalPackages: ['mongoose'],
-    },
+    serverExternalPackages: ['mongoose'],
     
     // تجاهل أخطاء البناء المتعلقة بقاعدة البيانات في بيئة الإنتاج
     typescript: {
