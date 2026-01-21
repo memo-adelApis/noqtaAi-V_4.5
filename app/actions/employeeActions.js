@@ -13,8 +13,8 @@ const employeeSchema = z.object({
     name: z.string().min(3, "الاسم قصير جداً"),
     email: z.string().email("بريد إلكتروني غير صالح"),
     password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
-    role: z.enum(["employee", "manager"]),
-    branchId: z.string().min(5, "يجب اختيار فرع"), // للتأكد أنه ObjectId
+    role: z.enum(["employee", "manager", "owner", "cashier", "accountant", "supervisor"]),
+    branchId: z.string().optional(), // اختياري للمالك
 });
 
 /**
@@ -44,13 +44,18 @@ export async function createEmployee(data) {
             throw new Error("هذا البريد الإلكتروني مستخدم بالفعل");
         }
 
-        // 3. التحقق من أن الفرع يتبع المشترك (أمان)
-        const branch = await Branch.findOne({ 
-            _id: branchId, 
-            userId: currentUser._id // التأكد أن الفرع يخص هذا المشترك
-        });
-        if (!branch) {
-            throw new Error("الفرع المحدد غير صالح أو لا تملكه");
+        // 3. التحقق من أن الفرع يتبع المشترك (أمان) - إلا إذا كان المالك بدون فرع
+        if (branchId && branchId.trim() !== '') {
+            const branch = await Branch.findOne({ 
+                _id: branchId, 
+                userId: currentUser._id // التأكد أن الفرع يخص هذا المشترك
+            });
+            if (!branch) {
+                throw new Error("الفرع المحدد غير صالح أو لا تملكه");
+            }
+        } else if (role !== 'owner') {
+            // إذا لم يكن مالك ولم يحدد فرع، فهذا خطأ
+            throw new Error("يجب تحديد فرع للموظف");
         }
 
         // 4. إنشاء الموظف
@@ -60,7 +65,7 @@ export async function createEmployee(data) {
             email,
             password, // الـ Hook سيقوم بالهاش
             role,
-            branchId,
+            branchId: (branchId && branchId.trim() !== '') ? branchId : null, // null إذا كان فارغ
             mainAccountId: currentUser._id, // ربط الموظف بحساب المشترك
             provider: 'credentials',
             isActive: true,

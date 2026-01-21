@@ -15,7 +15,7 @@ export default function AddEmployeeForm({ branches }) {
         email: '',
         password: '',
         role: 'employee',
-        branchId: branches.length > 0 ? branches[0]._id : ''
+        branchId: '' // فارغ بشكل افتراضي
     });
 
     const handleChange = (e) => {
@@ -37,7 +37,7 @@ export default function AddEmployeeForm({ branches }) {
             // إعادة تعيين النموذج
             setFormData({
                 name: '', email: '', password: '', 
-                role: 'employee', branchId: branches.length > 0 ? branches[0]._id : '' 
+                role: 'employee', branchId: '' 
             });
             router.refresh(); 
         } else {
@@ -117,9 +117,21 @@ export default function AddEmployeeForm({ branches }) {
                         onChange={handleChange}
                         className="w-full px-4 py-2.5 bg-[#252830] border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none cursor-pointer"
                     >
-                        <option value="employee">موظف</option>
-                        <option value="manager">مدير</option>
+                        <option value="employee">👤 موظف - صلاحيات أساسية</option>
+                        <option value="manager">👔 مدير فرع - إدارة الفرع والموظفين</option>
+                        <option value="owner">👑 مالك - صلاحيات كاملة</option>
+                        <option value="cashier">💰 كاشير - إدارة المبيعات والمدفوعات</option>
+                        <option value="accountant">📊 محاسب - إدارة الحسابات والتقارير</option>
+                        <option value="supervisor">🔍 مشرف - مراقبة العمليات</option>
                     </select>
+                    <div className="text-xs text-gray-500 mt-1">
+                        {formData.role === 'employee' && '• عرض البيانات الأساسية • إنشاء فواتير بسيطة'}
+                        {formData.role === 'manager' && '• إدارة الفرع • إدارة الموظفين • عرض التقارير'}
+                        {formData.role === 'owner' && '• جميع الصلاحيات • إدارة النظام • إعدادات الشركة'}
+                        {formData.role === 'cashier' && '• إدارة المبيعات • معالجة المدفوعات • إدارة الخزينة'}
+                        {formData.role === 'accountant' && '• إدارة الحسابات • التقارير المالية • المراجعة'}
+                        {formData.role === 'supervisor' && '• مراقبة العمليات • إشراف على الموظفين • تقارير الأداء'}
+                    </div>
                 </div>
 
                 {/* الفرع */}
@@ -133,15 +145,18 @@ export default function AddEmployeeForm({ branches }) {
                         id="branchId"
                         value={formData.branchId}
                         onChange={handleChange}
-                        required
                         className="w-full px-4 py-2.5 bg-[#252830] border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none cursor-pointer"
                     >
+                        <option value="">بدون فرع محدد</option>
                         {branches.map(branch => (
                             <option key={branch._id} value={branch._id}>
                                 {branch.name}
                             </option>
                         ))}
                     </select>
+                    <p className="text-xs text-gray-500 mt-1">
+                        {formData.role === 'owner' ? 'المالك لا يحتاج لفرع محدد' : 'اختر الفرع الذي سيعمل به الموظف'}
+                    </p>
                 </div>
             </div>
 

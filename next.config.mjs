@@ -2,6 +2,20 @@
 const nextConfig = {
     reactStrictMode: true,
     
+    // تحسينات البناء
+    experimental: {
+        serverComponentsExternalPackages: ['mongoose'],
+    },
+    
+    // تجاهل أخطاء البناء المتعلقة بقاعدة البيانات في بيئة الإنتاج
+    typescript: {
+        ignoreBuildErrors: false,
+    },
+    
+    eslint: {
+        ignoreDuringBuilds: false,
+    },
+    
     async headers() {
         return [
             {
@@ -41,6 +55,12 @@ const nextConfig = {
                 ]
             }
         ]
+    },
+    
+    // تحسين معالجة الصور
+    images: {
+        domains: ['localhost'],
+        unoptimized: true
     }
 };
 

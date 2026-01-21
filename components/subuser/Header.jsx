@@ -2,30 +2,29 @@
 
 import { useState } from 'react';
 import { signOut } from 'next-auth/react';
-// تمت إضافة أيقونة Menu هنا
-import { Bell, ChevronDown, LogOut, Menu } from 'lucide-react';
+import { Bell, ChevronDown, LogOut, Menu, User as UserIcon, Settings, Wallet } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+import NotificationCenter from '@/components/ui/NotificationCenter';
 
 export default function Header({ user, onSidebarToggle }) {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const pathname = usePathname();
 
-    // دالة لتحديد اسم الصفحة الحالية
+    // دالة ذكية لتحديد عنوان الصفحة بناءً على المسار
     const getPageTitle = () => {
-        switch (pathname) {
-            case '/dashboard':
-                return 'لوحة التحكم';
-            case '/profile':
-                return 'الملف الشخصي';
-            case '/settings':
-                return 'الإعدادات';
-            // يمكنك إضافة المزيد من الصفحات هنا
-            default:
-                return 'لوحة التحكم';
-        }
+        if (pathname.includes('/billing')) return 'الاشتراك والفوترة';
+        if (pathname.includes('/invoices')) return 'إدارة الفواتير';
+        if (pathname.includes('/customers')) return 'العملاء';
+        if (pathname.includes('/suppliers')) return 'الموردين';
+        if (pathname.includes('/employees')) return 'المستخدمين';
+        if (pathname.includes('/settings')) return 'إعدادات النظام';
+        if (pathname.includes('/profile')) return 'الملف الشخصي';
+        if (pathname.includes('/dashboard')) return 'لوحة القيادة';
+        return 'نقطة AI';
     };
 
-    // دالة للحصول على الأحرف الأولى من اسم المستخدم
+    // دالة للحصول على الأحرف الأولى
     const getInitials = (name) => {
         if (!name) return 'U';
         return name
@@ -36,102 +35,127 @@ export default function Header({ user, onSidebarToggle }) {
             .slice(0, 2);
     };
 
+    // ترجمة الدور للعربية
+    const userRole = {
+        subscriber: "مشترك",
+        manager: "مدير فرع",
+        employee: "موظف",
+        admin: "مسؤول النظام",
+        owner: "مالك"
+    }[user?.role] || user?.role;
+
     return (
         <header 
-            className="bg-gray-900 border-b  border-gray-700 shadow-lg sticky top-0 z-50" 
+            className="bg-[#14161f]/80 backdrop-blur-md border-b border-gray-800 sticky top-0 z-40 transition-all duration-300" 
             dir="rtl"
         >
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="w-full px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16 relative">
                     
-                    {/* الجانب الأيمن: زر القائمة + الروابط */}
+                    {/* الجانب الأيمن: القائمة والشعار */}
                     <div className="flex items-center gap-4">
-                        {/* زر القائمة: يظهر دائماً للتحكم في الشريط الجانبي */}
                         <button 
                             onClick={onSidebarToggle}
-                            className="text-gray-300 hover:text-white p-2 rounded-md hover:bg-gray-800 transition-colors focus:outline-none"
+                            className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-800 transition-colors focus:outline-none"
                             aria-label="Toggle Sidebar"
                         >
                             <Menu size={24} />
                         </button>
 
-                        {/* الروابط: تظهر فقط في الشاشات المتوسطة والكبيرة وتختفي في الموبايل */}
-                        <div className="hidden md:flex items-center gap-6 mr-2">
-                       
-                            <a href="/me" className="text-gray-300 hover:text-white transition-colors text-sm font-medium">
-                                من نحن ؟
-                            </a>
-                        
+                        {/* شعار يظهر في الهيدر أيضاً لتعزيز الهوية */}
+                        <div className="hidden sm:flex items-center gap-2">
+                            <span className="text-lg font-bold text-white tracking-wide">
+                                نقطة <span className="text-indigo-500">AI</span>
+                            </span>
                         </div>
                     </div>
 
-                    {/* المنتصف - عنوان الصفحة */}
-                    {/* استخدام التموضع المطلق لضمان توسيط العنوان بدقة */}
+                    {/* المنتصف: عنوان الصفحة */}
                     <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-                        <h1 className="text-lg font-semibold text-white whitespace-nowrap">
+                        <h1 className="text-lg font-bold text-white/90 whitespace-nowrap tracking-wide">
                             {getPageTitle()}
                         </h1>
                     </div>
 
-                    {/* الجانب الأيسر - الإشعارات والمستخدم */}
-                    <div className="flex items-center gap-2 sm:gap-4">
-                        <button className="p-2 rounded-full text-gray-300 hover:bg-gray-700 hover:text-white transition">
-                            <Bell size={20} />
-                        </button>
+                    {/* الجانب الأيسر: الإجراءات والمستخدم */}
+                    <div className="flex items-center gap-3 sm:gap-5">
+                        
+                        {/* زر الإشعارات */}
+                        <NotificationCenter />
 
-                        {/* القائمة المنسدلة للمستخدم */}
+                        {/* فاصل عمودي */}
+                        <div className="h-6 w-px bg-gray-800 hidden sm:block"></div>
+
+                        {/* قائمة المستخدم */}
                         <div className="relative">
                             <button
                                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                                className="flex items-center gap-2 rounded-full p-1 pl-2 text-sm hover:bg-gray-700 transition border border-transparent hover:border-gray-600"
+                                className="flex items-center gap-3 rounded-full p-1 pl-2 hover:bg-gray-800/50 transition border border-transparent hover:border-gray-700"
                             >
-                                <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-blue-600 text-white font-semibold overflow-hidden">
+                                <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white font-bold text-sm shadow-lg shadow-indigo-900/20 ring-2 ring-[#14161f]">
                                     {user?.image ? (
                                         <img 
                                             src={user.image} 
                                             alt={user?.name} 
-                                            className="w-full h-full object-cover" 
+                                            className="w-full h-full rounded-full object-cover" 
                                         />
                                     ) : (
                                         getInitials(user?.name)
                                     )}
                                 </div>
+                                
+                                <div className="hidden md:block text-right">
+                                    <p className="text-sm font-medium text-white leading-none mb-1">{user?.name?.split(' ')[0]}</p>
+                                    <p className="text-[10px] text-gray-400 font-medium leading-none">{userRole}</p>
+                                </div>
+
                                 <ChevronDown 
                                     size={16} 
-                                    className={`text-gray-300 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} 
+                                    className={`text-gray-500 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} 
                                 />
                             </button>
 
-                            {/* محتوى القائمة المنسدلة */}
+                            {/* القائمة المنسدلة */}
                             {dropdownOpen && (
                                 <>
-                                    {/* غطاء شفاف لإغلاق القائمة عند النقر خارجها */}
                                     <div 
                                         className="fixed inset-0 z-10" 
                                         onClick={() => setDropdownOpen(false)}
                                     ></div>
                                     
-                                    <div className="absolute left-0 top-full mt-2 w-56 bg-gray-800 rounded-md shadow-xl border border-gray-700 z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
-                                        <div className="px-4 py-3 bg-gray-700/50 border-b border-gray-700">
-                                            <p className="text-sm font-medium text-white truncate">{user?.name}</p>
-                                            <p className="text-xs text-gray-400 truncate">{user?.email}</p>
+                                    <div className="absolute left-0 top-full mt-3 w-60 bg-[#1c1d24] rounded-xl shadow-2xl border border-gray-800 z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-100 ring-1 ring-black/5">
+                                        
+                                        {/* رأس القائمة */}
+                                        <div className="px-5 py-4 bg-[#23252e] border-b border-gray-800">
+                                            <p className="text-sm font-bold text-white truncate">{user?.name}</p>
+                                            <p className="text-xs text-gray-400 truncate mt-0.5">{user?.email}</p>
+                                            <span className="inline-block mt-2 px-2 py-0.5 rounded text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                                                {userRole}
+                                            </span>
                                         </div>
 
-                                        <div className="py-1">
-                                            <a href="/profile" className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition">
+                                        {/* روابط القائمة */}
+                                        <div className="py-2">
+                                            <Link href="/subscriber/profile" className="flex items-center gap-3 px-5 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors group">
+                                                <UserIcon size={16} className="text-gray-500 group-hover:text-indigo-400 transition-colors" />
                                                 الملف الشخصي
-                                            </a>
-                                            <a href="/settings" className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition">
+                                            </Link>
+                                            <Link href="/subscriber/billing" className="flex items-center gap-3 px-5 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors group">
+                                                <Wallet size={16} className="text-gray-500 group-hover:text-indigo-400 transition-colors" />
+                                                الاشتراك والفوترة
+                                            </Link>
+                                            <Link href="/subscriber/settings" className="flex items-center gap-3 px-5 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors group">
+                                                <Settings size={16} className="text-gray-500 group-hover:text-indigo-400 transition-colors" />
                                                 الإعدادات
-                                            </a>
+                                            </Link>
                                         </div>
 
-                                        <div className="border-t border-gray-700 pt-1 pb-1">
+                                        <div className="border-t border-gray-800 pt-1 pb-1 my-1">
                                             <button
                                                 onClick={() => signOut({ callbackUrl: "/login" })}
-                                                className="flex items-center w-full px-4 py-2 text-sm text-red-400 hover:bg-gray-700/80 hover:text-red-300 transition"
+                                                className="flex items-center gap-3 w-full px-5 py-2.5 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
                                             >
-                                                <LogOut size={16} className="ml-2" />
+                                                <LogOut size={16} />
                                                 تسجيل الخروج
                                             </button>
                                         </div>

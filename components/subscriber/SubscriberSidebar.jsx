@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
   Users, Settings, Building, LayoutDashboard, FileText, 
-  Truck, UserCheck, X, StoreIcon, CreditCard, Lock 
+  Truck, UserCheck, X, StoreIcon, CreditCard, Lock, Bell, Home, BookOpen 
 } from "lucide-react";
 
 // مكون الرابط الداخلي
@@ -44,33 +44,42 @@ export default function SubscriberSidebar({ isOpen, isMobile, onClose, user }) {
     {
       title: "الرئيسية",
       items: [
-        { 
-          label: "لوحة التحكم", 
-          href: "/subscriber/dashboard", 
-          icon: LayoutDashboard, 
-          alwaysShow: true // يظهر دائماً
-        }
+        { label: "الصفحة الرئيسية", href: "/subscriber", icon: Home, alwaysShow: true },
+        { label: "لوحة التحكم", href: "/subscriber/dashboard", icon: LayoutDashboard, alwaysShow: true },
+        { label: "دليل آلية العمل", href: "/subscriber/guide", icon: BookOpen, alwaysShow: true },
+      ]
+    },
+    {
+      title: "التواصل",
+      items: [
+        { label: "الإشعارات", href: "/subscriber/notifications", icon: Bell, alwaysShow: true },
       ]
     },
     {
       title: "الإدارة",
       items: [
         { label: "المستخدمين", href: "/subscriber/employees", icon: Users, alwaysShow: false },
-        { label: "الفواتير", href: "/subscriber/invoice", icon: FileText, alwaysShow: false },
-        { label: "الفروع", href: "/subscriber/dashboard/branches", icon: Building, alwaysShow: false },
-        { label: "الموردين", href: "/subscriber/dashboard/suppliers", icon: Truck, alwaysShow: false },
-        { label: "مخازني", href: "/subscriber/dashboard/stores/analytics", icon: StoreIcon, alwaysShow: false },
+        { label: "الفروع", href: "/subscriber/branches", icon: Building, alwaysShow: false },
+        { label: "المتجر الإلكتروني", href: "/subscriber/shop", icon: StoreIcon, alwaysShow: false },
+        { label: "عملاء المتجر", href: "/subscriber/shop-users", icon: UserCheck, alwaysShow: false },
       ]
     },
     {
       title: "المالية والنظام",
       items: [
         { 
-          label: "الاشتراك والفوترة", 
-          href: "/subscriber/billing", 
+          label: "إدارة الاشتراك", 
+          href: "/subscriber/subscription", 
           icon: CreditCard, 
           alwaysShow: true, // يظهر دائماً للدفع
           role: "subscriber" // يظهر للمشترك فقط (اختياري)
+        },
+        { 
+          label: "الفوترة والدفع", 
+          href: "/subscriber/billing", 
+          icon: CreditCard, 
+          alwaysShow: true,
+          role: "subscriber"
         },
         { label: "الإعدادات", href: "/subscriber/settings", icon: Settings, alwaysShow: true },
         { label: "الملف الشخصي", href: "/subscriber/profile", icon: UserCheck, alwaysShow: true },

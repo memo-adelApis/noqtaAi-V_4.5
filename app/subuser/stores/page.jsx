@@ -1,5 +1,5 @@
 // المسار: app/(subuser)/stores/page.js
-import { getMyBranchData } from "@/app/actions/subuserActions";
+import { getMyBranchData } from "@/app/actions/subuserEntiAction";
 import SubStoreClientUI from "@/components/subuser/SubStoreClientUI";
 import { AlertCircle } from 'lucide-react';
 
@@ -8,14 +8,6 @@ export default async function SubuserStoresPage() {
     
 const result = await getMyBranchData();
 const stores = result?.data?.stores || [];
-
-const serializedStores = stores.map(store => ({
-    ...store,
-    _id: store._id.toString(),
-    userId: store.userId.toString(),
-    branchId: store.branchId.toString(),
-    createdAt: store.createdAt.toISOString(),
-}));
 
     // 2. التحقق من النجاح
     if (!result.success) {
@@ -32,6 +24,6 @@ const serializedStores = stores.map(store => ({
     
     // 3. تمرير "بيانات المخازن" فقط إلى الواجهة
     return (
-        <SubStoreClientUI initialStores={serializedStores} />
+        <SubStoreClientUI initialStores={stores} />
     );
 }

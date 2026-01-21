@@ -1,17 +1,15 @@
-import Unit from "@/models/Units";
+import Item from "@/models/Items";
+import User from "@/models/User";
 import { connectToDB } from "@/utils/database";
 import { NextResponse } from "next/server";
 
-export async function POST(request) {
+export async function GET() {
     try {
         await connectToDB();
-
-        const data = await request.json();
-
-        const newUnit = await Unit.create(data);
+        const data = await User.find();
 
         return NextResponse.json(
-            { success: true, data: newUnit },
+            { success: true, items: data },
             { status: 201 }
         );
     } catch (error) {

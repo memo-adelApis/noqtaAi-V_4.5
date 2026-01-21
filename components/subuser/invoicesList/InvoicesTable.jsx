@@ -1,13 +1,24 @@
 import Link from "next/link";
-import { Eye, FileX, ArrowUpRight, ArrowDownLeft } from "lucide-react";
+import { Eye, FileX, ArrowUpRight, ArrowDownLeft, Edit } from "lucide-react";
 
 // ✅ تنسيق العملة
-const formatCurrency = (amount, currency = "EGP") =>
-    new Intl.NumberFormat("ar-EG", {
-        style: "currency",
-        currency,
-        maximumFractionDigits: 2
-    }).format(amount);
+const formatCurrency = (amount, currency = "EGP") => {
+    // التحقق من صحة رمز العملة
+    if (!currency || currency.trim() === '') {
+        currency = 'EGP';
+    }
+    
+    try {
+        return new Intl.NumberFormat("ar-EG", {
+            style: "currency",
+            currency,
+            maximumFractionDigits: 2
+        }).format(amount);
+    } catch (error) {
+        // في حالة فشل تنسيق العملة، نعرض الرقم مع رمز العملة
+        return `${Number(amount).toLocaleString('ar-EG')} ${currency}`;
+    }
+};
 
 // ✅ تنسيق التاريخ
 const formatDate = (dateString) =>
@@ -45,30 +56,30 @@ const StatusBadge = ({ status }) => {
 
 export default function InvoicesTable({ invoices = [] }) {
     return (
-        <div className="overflow-hidden bg-[#1c1d22] rounded-xl shadow-2xl border border-gray-800">
+        <div className="overflow-hidden bg-gray-800 rounded-lg shadow-sm border border-gray-700">
             <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-800">
+                <table className="min-w-full divide-y divide-gray-700">
                     
                     {/* 🧩 رأس الجدول */}
-                    <thead className="bg-[#252830]">
+                    <thead className="bg-gray-900">
                         <tr>
-                            <th className="py-4 px-6 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">رقم الفاتورة</th>
-                            <th className="py-4 px-6 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">العميل / المورد</th>
-                            <th className="py-4 px-6 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">النوع</th>
-                            <th className="py-4 px-6 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">التاريخ</th>
-                            <th className="py-4 px-6 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">الإجمالي</th>
-                            <th className="py-4 px-6 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">الحالة</th>
-                            <th className="py-4 px-6 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">إجراءات</th>
+                            <th className="py-4 px-6 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">رقم الفاتورة</th>
+                            <th className="py-4 px-6 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">العميل / المورد</th>
+                            <th className="py-4 px-6 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">النوع</th>
+                            <th className="py-4 px-6 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">التاريخ</th>
+                            <th className="py-4 px-6 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">الإجمالي</th>
+                            <th className="py-4 px-6 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">الحالة</th>
+                            <th className="py-4 px-6 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">إجراءات</th>
                         </tr>
                     </thead>
 
-                    <tbody className="divide-y divide-gray-800 bg-[#1c1d22]">
+                    <tbody className="divide-y divide-gray-700 bg-gray-800">
                         {invoices.length === 0 ? (
                             <tr>
-                                <td colSpan={7} className="py-12 text-center text-gray-500">
+                                <td colSpan={7} className="py-12 text-center text-gray-400">
                                     <div className="flex flex-col items-center justify-center gap-3">
-                                        <div className="p-4 bg-gray-800/50 rounded-full">
-                                            <FileX size={32} className="text-gray-600" />
+                                        <div className="p-4 bg-gray-700 rounded-full">
+                                            <FileX size={32} className="text-gray-500" />
                                         </div>
                                         <p>لا توجد فواتير مطابقة للبحث</p>
                                     </div>
@@ -79,11 +90,11 @@ export default function InvoicesTable({ invoices = [] }) {
                                 const isRevenue = invoice.type === 'revenue';
                                 
                                 return (
-                                    <tr key={invoice._id} className="hover:bg-[#292a30] transition-colors group">
+                                    <tr key={invoice._id} className="hover:bg-gray-750 transition-colors group">
                                         
                                         {/* رقم الفاتورة */}
                                         <td className="py-4 px-6 whitespace-nowrap">
-                                            <span className="font-mono text-sm font-bold text-white group-hover:text-indigo-400 transition-colors">
+                                            <span className="font-mono text-sm font-bold text-white group-hover:text-blue-400 transition-colors">
                                                 {invoice.invoiceNumber}
                                             </span>
                                         </td>
@@ -97,20 +108,20 @@ export default function InvoicesTable({ invoices = [] }) {
 
                                         {/* النوع */}
                                         <td className="py-4 px-6 whitespace-nowrap">
-                                            <div className={`flex items-center gap-1 text-xs font-bold ${isRevenue ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                            <div className={`flex items-center gap-1 text-xs font-bold ${isRevenue ? 'text-green-400' : 'text-red-400'}`}>
                                                 {isRevenue ? <ArrowDownLeft size={14} /> : <ArrowUpRight size={14} />}
                                                 {isRevenue ? "إيراد" : "مصروف"}
                                             </div>
                                         </td>
 
                                         {/* التاريخ */}
-                                        <td className="py-4 px-6 whitespace-nowrap text-sm text-gray-400 font-mono">
+                                        <td className="py-4 px-6 whitespace-nowrap text-sm text-gray-300 font-mono">
                                             {formatDate(invoice.createdAt)}
                                         </td>
 
                                         {/* الإجمالي */}
                                         <td className="py-4 px-6 whitespace-nowrap">
-                                            <span className={`text-sm font-bold ${isRevenue ? 'text-white' : 'text-white'}`}>
+                                            <span className="text-sm font-bold text-white">
                                                 {formatCurrency(invoice.totalInvoice, invoice.currencyCode)}
                                             </span>
                                         </td>
@@ -122,13 +133,22 @@ export default function InvoicesTable({ invoices = [] }) {
 
                                         {/* الإجراءات */}
                                         <td className="py-4 px-6 whitespace-nowrap text-center">
-                                            <Link
-                                                href={`/subuser/invoices/${invoice._id}`}
-                                                className="inline-flex items-center justify-center p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700/50 transition-all border border-transparent hover:border-gray-600"
-                                                title="عرض التفاصيل"
-                                            >
-                                                <Eye size={18} />
-                                            </Link>
+                                            <div className="flex items-center justify-center gap-2">
+                                                <Link
+                                                    href={`/subuser/invoices/${invoice._id}`}
+                                                    className="inline-flex items-center justify-center p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-600 transition-all border border-transparent hover:border-gray-500"
+                                                    title="عرض التفاصيل"
+                                                >
+                                                    <Eye size={18} />
+                                                </Link>
+                                                <Link
+                                                    href={`/subuser/invoices/edit/${invoice._id}`}
+                                                    className="inline-flex items-center justify-center p-2 rounded-lg text-gray-400 hover:text-blue-400 hover:bg-blue-900/30 transition-all border border-transparent hover:border-blue-600"
+                                                    title="تعديل الفاتورة"
+                                                >
+                                                    <Edit size={18} />
+                                                </Link>
+                                            </div>
                                         </td>
                                     </tr>
                                 );

@@ -2,7 +2,7 @@
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useDebouncedCallback } from "use-debounce";
-import { Search, Filter, ListFilter } from "lucide-react"; // أضفت أيقونات إضافية جمالية
+import { Search, Filter, ListFilter } from "lucide-react";
 
 export default function InvoiceFilters() {
     const router = useRouter();
@@ -25,9 +25,9 @@ export default function InvoiceFilters() {
     }, 400);
 
     return (
-        <div className="bg-white dark:bg-[#1e293b] p-5 rounded-xl border border-gray-100 dark:border-gray-700/50 shadow-lg shadow-gray-200/40 dark:shadow-none mb-6 transition-all duration-300">
+        <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-sm mb-6">
             
-            {/* عنوان صغير اختياري للجمالية */}
+            {/* عنوان الفلاتر */}
             <div className="flex items-center gap-2 mb-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
                 <Filter size={14} />
                 <span>تصفية البيانات</span>
@@ -37,14 +37,14 @@ export default function InvoiceFilters() {
                 
                 {/* حقل البحث */}
                 <div className="col-span-1 sm:col-span-2 relative group">
-                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors duration-300">
+                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-400 transition-colors duration-300">
                         <Search size={18} />
                     </div>
                     <input
                         type="text"
                         name="q"
                         placeholder="ابحث برقم الفاتورة أو اسم العميل..."
-                        className="w-full h-11 pr-10 pl-4 text-sm bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-gray-600 rounded-lg outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-300 text-gray-700 dark:text-gray-200 placeholder:text-gray-400"
+                        className="w-full h-11 pr-10 pl-4 text-sm bg-gray-700 border border-gray-600 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 text-white placeholder:text-gray-400"
                         onChange={handleFilterChange}
                         defaultValue={searchParams.get("q") || ""}
                     />
@@ -56,7 +56,7 @@ export default function InvoiceFilters() {
                         name="status"
                         onChange={handleFilterChange}
                         defaultValue={searchParams.get("status") || ""}
-                        className="w-full h-11 px-4 text-sm bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-gray-600 rounded-lg outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-300 text-gray-700 dark:text-gray-200 cursor-pointer appearance-none"
+                        className="w-full h-11 px-4 text-sm bg-gray-700 border border-gray-600 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 text-white cursor-pointer appearance-none"
                     >
                         <option value="">📋 كل الحالات</option>
                         <option value="pending">⏳ قيد الانتظار</option>
@@ -76,7 +76,7 @@ export default function InvoiceFilters() {
                         name="type"
                         onChange={handleFilterChange}
                         defaultValue={searchParams.get("type") || ""}
-                        className="w-full h-11 px-4 text-sm bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-gray-600 rounded-lg outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-300 text-gray-700 dark:text-gray-200 cursor-pointer appearance-none"
+                        className="w-full h-11 px-4 text-sm bg-gray-700 border border-gray-600 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 text-white cursor-pointer appearance-none"
                     >
                         <option value="">🔄 كل الأنواع</option>
                         <option value="revenue">💰 إيرادات (مبيعات)</option>

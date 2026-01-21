@@ -28,7 +28,7 @@ export default async function SubscriberLayout({ children }) {
 
   // 4. تمرير البيانات لمكون العميل
   return (
-    <SubscriberLayoutClient user={userForClient}>
+    <SubscriberLayoutClient className="p-4" user={userForClient}>
       {children}
     </SubscriberLayoutClient>
   );

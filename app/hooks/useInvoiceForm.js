@@ -3,7 +3,7 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { createInvoiceAction } from '@/app/actions/invoiceActions';
+import { createInvoice } from '@/app/actions/invoiceActions';
 import { toast } from 'react-toastify';
 import { z } from "zod";
 
@@ -14,10 +14,13 @@ export const invoiceItemSchema = z.object({
   quantity: z.number().min(0, "الكمية لا يمكن أن تكون سالبة"),
   unit: z.string().min(1, "الوحدة مطلوبة"),
   storeId: z.string().min(1, "المخزن مطلوب"),
+  categoryId: z.string().optional(), // مطلوب للشراء فقط
+  itemId: z.string().optional(), // للمنتجات الموجودة
+  description: z.string().optional(),
   removalReason: z.string().optional(),
 });
 
-export const useInvoiceForm = (initialData) => {
+export const useInvoiceForm = (initialData, existingInvoice = null) => {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
 
@@ -28,6 +31,9 @@ export const useInvoiceForm = (initialData) => {
         quantity: 1, 
         unit: initialData?.units?.[0]?._id || '',
         storeId: initialData?.stores?.[0]?._id || '',
+        categoryId: '',
+        itemId: '', // للمنتجات الموجودة
+        description: '',
         removalReason: '',
     });
 
@@ -40,20 +46,25 @@ export const useInvoiceForm = (initialData) => {
         }));
     };
     
-    // --- (2) باقي الحالات ---
-    const [invoiceType, setInvoiceType] = useState('revenue'); 
-    const [invoiceKind, setInvoiceKind] = useState('normal'); 
-    const [selectedEntity, setSelectedEntity] = useState(null); 
-    const [invoiceNumber, setInvoiceNumber] = useState('');
-    const [currencyCode, setCurrencyCode] = useState('EGP');
-    const [notes, setNotes] = useState('');
-    const [items, setItems] = useState([]); 
-    const [pays, setPays] = useState([]); 
-    const [discount, setDiscount] = useState(0);
-    const [extra, setExtra] = useState(0); 
-    const [taxRate, setTaxRate] = useState(15);
-    const [paymentType, setPaymentType] = useState('cash'); 
-    const [installments, setInstallments] = useState([]);
+    // --- (2) باقي الحالات - مع دعم البيانات الموجودة ---
+    const [invoiceType, setInvoiceType] = useState(existingInvoice?.type || 'revenue'); 
+    const [invoiceKind, setInvoiceKind] = useState(existingInvoice?.kind || 'normal'); 
+    const [selectedEntity, setSelectedEntity] = useState(
+        existingInvoice ? {
+            _id: existingInvoice.customerId || existingInvoice.supplierId,
+            name: existingInvoice.entityName
+        } : null
+    ); 
+    const [invoiceNumber, setInvoiceNumber] = useState(existingInvoice?.invoiceNumber || '');
+    const [currencyCode, setCurrencyCode] = useState(existingInvoice?.currencyCode || 'EGP');
+    const [notes, setNotes] = useState(existingInvoice?.notes || '');
+    const [items, setItems] = useState(existingInvoice?.items || []); 
+    const [pays, setPays] = useState(existingInvoice?.pays || []); 
+    const [discount, setDiscount] = useState(existingInvoice?.discount || 0);
+    const [extra, setExtra] = useState(existingInvoice?.extra || 0); 
+    const [taxRate, setTaxRate] = useState(existingInvoice?.taxRate || 15);
+    const [paymentType, setPaymentType] = useState(existingInvoice?.paymentType || 'cash'); 
+    const [installments, setInstallments] = useState(existingInvoice?.installments || []);
 
     // --- (3) الملخص ---
     const summary = useMemo(() => {
@@ -76,6 +87,12 @@ export const useInvoiceForm = (initialData) => {
     // --- (5) دوال الأصناف ---
     const addItem = () => {
       try {
+        // التحقق من الحقول المطلوبة للشراء
+        if (invoiceType === 'expense' && !currentItem.categoryId) {
+          toast.error("يجب اختيار فئة المنتج للفواتير الشرائية");
+          return;
+        }
+
         const validatedItem = invoiceItemSchema.parse(currentItem);
 
         setItems(prev => [...prev, { ...validatedItem, id: Date.now() }]);
@@ -86,6 +103,9 @@ export const useInvoiceForm = (initialData) => {
           quantity: 1, 
           unit: initialData?.units?.[0]?._id || '',
           storeId: initialData?.stores?.[0]?._id || '',
+          categoryId: '',
+          itemId: '',
+          description: '',
           removalReason: '',
         });
 
@@ -184,7 +204,7 @@ export const useInvoiceForm = (initialData) => {
             notes,
         };
 
-        const result = await createInvoiceAction(invoiceData);
+        const result = await createInvoice(invoiceData);
 
         toast.dismiss();
         if (result.success) {

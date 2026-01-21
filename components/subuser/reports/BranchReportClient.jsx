@@ -2,7 +2,7 @@
 "use client";
 
 import { usePerformanceAI } from "@/app/hooks/usePerformanceAI";
-import BranchReportUI from "@/components/subuser/reports/BranchReportUI";
+import BranchReportUI from "@/components/subuser/reports/BranchReportUI_Enhanced";
 import PerformanceSummary from "@/components/subuser/reports/PerformanceSummary";
 import AIPredictions from "@/components/subuser/reports/AIPredictions";
 import { Sparkles } from "lucide-react";

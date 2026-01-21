@@ -1,8 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fafbfdfa; /* Dark Navy */
+  --background: #000c22fa; /* Dark Navy */
   --foreground: #7b79ff; /* Light Gray */
+  --sidebar-width: 16rem;
+  --sidebar-width-closed: 4rem;
 }
 
 @theme inline {
@@ -17,34 +19,55 @@ body {
   font-family: 'Cairo', sans-serif;
   margin: 0;
   padding: 0;
+  /* إجبار استخدام الأرقام الإنجليزية بدلاً من العربية */
+  font-variant-numeric: lining-nums;
+  -webkit-font-feature-settings: "lnum" 1;
+  font-feature-settings: "lnum" 1;
 }
 
+/* إجبار الأرقام الإنجليزية في جميع العناصر */
+* {
+  font-variant-numeric: lining-nums;
+  -webkit-font-feature-settings: "lnum" 1;
+  font-feature-settings: "lnum" 1;
+}
+
+/* تعريف خط Cairo-Regular */
 @font-face {
   font-family: 'Cairo';
-  src: url('/public/fonts/Cairo-Regular.ttf') format('truetype');
-  font-weight: 400; /* الوزن الافتراضي للخط العادي */
+  src: url('/fonts/Cairo-Regular.ttf') format('truetype');
+  font-weight: 400;
   font-style: normal;
-  font-display: swap; /* للسماح للصفحة بالتحميل أثناء تحميل الخط */
+  font-display: swap;
 }
 
 /* تعريف خط Cairo-Bold */
 @font-face {
   font-family: 'Cairo';
-  src: url('/public/fonts/Cairo-Bold.ttf') format('truetype');
-  font-weight: 700; /* الوزن للخط العريض/الغامق */
+  src: url('/fonts/Cairo-Bold.ttf') format('truetype');
+  font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
-:root {
-  --sidebar-width: 16rem;
-  --sidebar-width-closed: 4rem;
+/* تطبيق الإزاحة فقط على الشاشات الكبيرة (md وأكبر) */
+@media (min-width: 768px) {
+  .sidebar-open main {
+    margin-right: var(--sidebar-width);
+    transition: margin-right 0.3s ease-in-out;
+  }
+
+  .sidebar-closed main {
+    margin-right: var(--sidebar-width-closed);
+    transition: margin-right 0.3s ease-in-out;
+  }
 }
 
-.sidebar-open main {
-  margin-right: var(--sidebar-width);
-}
-
-.sidebar-closed main {
-  margin-right: var(--sidebar-width-closed);
+/* على الموبايل، نجعل الهامش 0 دائمًا لاستغلال كامل الشاشة */
+@media (max-width: 767px) {
+  .sidebar-open main,
+  .sidebar-closed main {
+    margin-right: 0;
+    width: 100%;
+  }
 }

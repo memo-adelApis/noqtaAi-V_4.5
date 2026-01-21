@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { 
     Home, FileText, PlusCircle, Users, Truck, 
-    Building, LogOut, PieChart, ChevronDown, Lock, X 
+    Building, LogOut, PieChart, ChevronDown, Lock, X, Calendar, Package, Tag 
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 
@@ -18,10 +18,18 @@ const navItems = [
         ]
     },
     {
-        label: "الفواتير",
+        label: "الفواتير والأقساط",
         items: [
             { href: "/subuser/invoices/add", label: "إضافة فاتورة", icon: PlusCircle, alwaysShow: false },
             { href: "/subuser/invoices", label: "قائمة الفواتير", icon: FileText, alwaysShow: false },
+            { href: "/subuser/installments", label: "الأقساط المتبقية", icon: Calendar, alwaysShow: false },
+        ]
+    },
+    {
+        label: "المخزون",
+        items: [
+            { href: "/subuser/items", label: "الأصناف", icon: Package, alwaysShow: false },
+            { href: "/subuser/categories", label: "الفئات", icon: Tag, alwaysShow: false },
         ]
     },
     {

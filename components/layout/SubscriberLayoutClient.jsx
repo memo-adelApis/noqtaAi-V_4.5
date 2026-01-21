@@ -28,7 +28,7 @@ export default function SubscriberLayoutClient({ children, user }) {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   return (
-    <div className="min-h-screen bg-[#0f111a] text-gray-100" dir="rtl">
+    <div className="min-h-screen  bg-[#0f111a] text-gray-100" dir="rtl">
       
       {/* تمرير المستخدم المحدث (من الداتابيس) للشريط الجانبي */}
       <SubscriberSidebar 
@@ -49,7 +49,7 @@ export default function SubscriberLayoutClient({ children, user }) {
           onSidebarToggle={toggleSidebar} 
         />
 
-        <main className="flex-1 bg-[#14161f] p-4 md:p-0 text-gray-200 overflow-x-hidden">
+        <main className="flex-1 p-4 bg-[#14161f] p-5 md:p-0 text-gray-200 overflow-x-hidden">
           {children}
         </main>
         <Footer />

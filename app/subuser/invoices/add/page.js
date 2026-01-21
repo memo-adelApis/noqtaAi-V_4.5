@@ -1,7 +1,8 @@
 // المسار: app/(subuser)/invoices/add/page.js
 import { getInvoiceFormData } from '@/app/actions/invoiceDataActions';
 import CreateInvoiceForm from '@/components/subuser/invoices/CreateInvoiceForm';
-import { AlertCircle } from 'lucide-react';
+import { redirect } from 'next/navigation';
+import AutoRedirect from '@/components/ui/AutoRedirect';
 
 // هذا "Server Component"
 export default async function AddInvoicePage() {
@@ -9,16 +10,21 @@ export default async function AddInvoicePage() {
     // 1. جلب البيانات الأولية (المخازن، الوحدات) على الخادم
     const result = await getInvoiceFormData();
 
-    // 2. التحقق من النجاح (هنا يتم عرض الخطأ بوضوح)
+    // 2. التحقق من النجاح والتوجيه التلقائي في حالة عدم وجود مخازن
     if (!result.success) {
+        // إذا كان هناك توجيه محدد، نستخدمه
+        if (result.redirectTo) {
+            redirect(result.redirectTo);
+        }
+        
+        // في حالة أخطاء أخرى، نعرض مكون التوجيه التلقائي
         return (
-            <div className="flex items-center justify-center h-full bg-red-50 text-red-700 p-8 rounded-lg" dir="rtl">
-                <AlertCircle size={24} className="ml-2" />
-                <div>
-                    <h2 className="font-semibold">خطأ في تحميل بيانات الفورم</h2>
-                    <p className="font-bold">{result.error}</p>
-                </div>
-            </div>
+            <AutoRedirect
+              message={result.error}
+              redirectTo="/subuser/stores"
+              redirectText="إدارة المخازن"
+              delay={0} // بدون تأخير، فقط زر يدوي
+            />
         );
     }
 

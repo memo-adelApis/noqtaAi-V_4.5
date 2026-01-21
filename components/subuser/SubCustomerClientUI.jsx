@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { createMyCustomer, updateMyCustomer, deleteMyCustomer } from '@/app/actions/subuserActions'; 
+import { createMyCustomer, updateMyCustomer, deleteMyCustomer } from '@/app/actions/subuserEntiAction'; 
 import { useRouter } from 'next/navigation';
 import { Plus, Edit2, Trash2, Phone, MapPin, User, AlertTriangle } from 'lucide-react';
 import { z } from "zod";

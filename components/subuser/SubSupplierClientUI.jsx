@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from 'react';
-import { createMySupplier, updateMySupplier, deleteMySupplier } from '@/app/actions/subuserActions'; 
+import { createMySupplier, updateMySupplier, deleteMySupplier } from '@/app/actions/subuserEntiAction'; 
 import { useRouter } from 'next/navigation';
 import { Plus, Edit2, Trash2, Phone, MapPin, Truck, AlertTriangle } from 'lucide-react';
 import { z } from "zod";

@@ -1,7 +1,7 @@
 // المسار: app/(subuser)/suppliers/page.js
 export const dynamic = 'force-dynamic';
 
-import { getMyBranchData } from "@/app/actions/subuserActions";
+import { getMyBranchData } from "@/app/actions/subuserEntiAction";
 import SubSupplierClientUI from "@/components/subuser/SubSupplierClientUI";
 import { AlertCircle } from 'lucide-react';
 
@@ -9,17 +9,7 @@ import { AlertCircle } from 'lucide-react';
 export default async function SubuserSuppliersPage() {
     
 const result = await getMyBranchData();
-
-// إذا data غير موجود أو الفetch فشل، نرجع مصفوفة فارغة
 const suppliers = result?.data?.suppliers || [];
-
-const serializedSuppliers = suppliers.map(s => ({
-  ...s,
-  _id: s._id.toString(),
-  userId: s.userId.toString(),
-  branchId: s.branchId.toString(),
-  createdAt: s.createdAt.toISOString(),
-}));
     // 2. التحقق من النجاح
     if (!result.success) {
         return (
@@ -35,6 +25,6 @@ const serializedSuppliers = suppliers.map(s => ({
     
     // 3. تمرير "بيانات الموردين" فقط إلى الواجهة
     return (
-        <SubSupplierClientUI initialSuppliers={serializedSuppliers} />
+        <SubSupplierClientUI initialSuppliers={suppliers} />
     );
 }

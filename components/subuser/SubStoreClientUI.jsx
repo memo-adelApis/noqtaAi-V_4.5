@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { createMyStore, updateMyStore, deleteMyStore } from '@/app/actions/subuserActions'; 
+import { createMyStore, updateMyStore, deleteMyStore } from '@/app/actions/subuserEntiAction'; 
 import { useRouter } from 'next/navigation';
 import { Plus, Edit2, Trash2, MapPin, Building, AlertTriangle } from 'lucide-react';
 import { z } from "zod";

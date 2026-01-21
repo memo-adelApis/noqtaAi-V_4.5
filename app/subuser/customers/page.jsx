@@ -1,4 +1,4 @@
-import { getMyBranchData } from "@/app/actions/subuserActions";
+import { getMyBranchData } from "@/app/actions/subuserEntiAction";
 import SubCustomerClientUI from "@/components/subuser/SubCustomerClientUI";
 import { AlertCircle } from 'lucide-react';
 
@@ -7,14 +7,6 @@ export default async function SubuserCustomersPage() {
     
 const result = await getMyBranchData();
 const customers = result?.data?.customers || [];
-
-const serializedCustomers = customers.map(customer => ({
-    ...customer,
-    _id: customer._id.toString(),
-    userId: customer.userId.toString(),
-    branchId: customer.branchId.toString(),
-    createdAt: customer.createdAt.toISOString(),
-}));
 
 
     // 2. التحقق من النجاح
@@ -33,7 +25,7 @@ const serializedCustomers = customers.map(customer => ({
     // 3. تمرير البيانات إلى الواجهة
     return (
         <SubCustomerClientUI 
-            initialCustomers={serializedCustomers} 
+            initialCustomers={customers} 
         />
     );
 }

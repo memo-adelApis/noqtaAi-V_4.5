@@ -1,187 +1,319 @@
-// المسار: app/actions/branchActions.js (ملف جديد)
-"use server";
+'use server';
 
-import { connectToDB } from "@/utils/database";
-import { getCurrentUser } from "@/app/lib/auth";
-import Branch from "@/models/Branches";
-import User from "@/models/User"; // لاستخدامه في فحص الحذف
-import { z } from "zod";
-import { revalidatePath } from "next/cache";
+import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
+import Branch from '@/models/Branches';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
-// مخطط التحقق من بيانات الفرع
-const branchSchema = z.object({
-    name: z.string().min(2, "اسم الفرع قصير جداً"),
-    location: z.string().optional(),
-});
-
-/**
- * دالة لجلب فروع المشترك (التي يملكها)
- */
-export async function getMyBranches() {
-    try {
-        const currentUser = await getCurrentUser();
-        if (!currentUser || currentUser.role !== 'subscriber') {
-            throw new Error("403 - غير مصرح لك");
-        }
-        
-        await connectToDB();
-        const branches = await Branch.find({ userId: currentUser._id }).sort({ createdAt: -1 });
-        return { success: true, data: JSON.parse(JSON.stringify(branches)) };
-
-    } catch (error) {
-        return { success: false, error: error.message };
+// إضافة فرع جديد (للاستخدام من Server Actions)
+export async function addBranch(formData) {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session || session.user.role !== 'subscriber') {
+      return { success: false, error: 'غير مصرح لك بهذا الإجراء' };
     }
-}
 
-/**
- * دالة لإنشاء فرع جديد
- */
-export async function createBranch(data) {
-    try {
-                const currentUser = await getCurrentUser();
+    const name = formData.get('name');
+    const location = formData.get('location') || '';
 
-        // 1. جلب بيانات المشترك صاحب الحساب
-  // إذا كان الموظف هو من يضيف، يجب أن نجلب بيانات "صاحب العمل" (mainAccountId)
-  const ownerId = currentUser.role === "subscriber" ? currentUser.id : currentUser.mainAccountId;
-  
-  const owner = await User.findById(ownerId);
-  const subscription = owner.subscription || {};
+    // التحقق من البيانات المطلوبة
+    if (!name) {
+      return { success: false, error: 'اسم الفرع مطلوب' };
+    }
 
-  // 2. التحقق من انتهاء الاشتراك كلياً
-  if (!subscription.isActive || (subscription.endDate && new Date() > new Date(subscription.endDate))) {
-      return { success: false, error: "عفواً، اشتراكك منتهي. لا يمكنك إضافة فروع جديدة." };
+    // التحقق من عدم وجود فرع بنفس الاسم للمستخدم
+    const existingBranch = await Branch.findOne({ 
+      name, 
+      userId: session.user.id 
+    });
+    
+    if (existingBranch) {
+      return { success: false, error: 'يوجد فرع بهذا الاسم مسبقاً' };
+    }
+
+    // إنشاء الفرع الجديد
+    const newBranch = await Branch.create({
+      name,
+      location,
+      userId: session.user.id
+    });
+
+    // تحويل إلى plain object
+    const plainBranch = {
+      _id: newBranch._id.toString(),
+      name: newBranch.name,
+      location: newBranch.location,
+      userId: newBranch.userId.toString(),
+      createdAt: newBranch.createdAt,
+      updatedAt: newBranch.updatedAt
+    };
+
+    revalidatePath('/subscriber/branches');
+    
+    return { success: true, branch: plainBranch, message: 'تم إضافة الفرع بنجاح' };
+
+  } catch (error) {
+    console.error('خطأ في إضافة الفرع:', error);
+    return { success: false, error: 'حدث خطأ في النظام' };
   }
+}
 
-  // 3. التحقق من الحد الأقصى للفروع
-  const currentBranchesCount = await Branch.countDocuments({ userId: ownerId }); // تأكد أن الحقل في الـ Schema هو userId
-  
-  // تحديد الحد المسموح (مثلاً: 1 للتجريبي، ولا نهائي للمدفوع)
-  // يمكنك تخزين limit داخل الـ subscription في الداتابيس لتكون ديناميكية
-  const BRANCH_LIMIT = subscription.plan === "trial" ? 1 : 999; 
+// إضافة فرع جديد (للاستخدام من Client Components)
+export async function createBranch(branchData) {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session || session.user.role !== 'subscriber') {
+      return { success: false, error: 'غير مصرح لك بهذا الإجراء' };
+    }
 
-  if (currentBranchesCount >= BRANCH_LIMIT) {
-      return { 
-          success: false, 
-          error: `لقد وصلت للحد الأقصى من الفروع المسموحة لباقة (${subscription.plan}). يرجى الترقية لإضافة المزيد.` 
-      };
+    const { name, location = '' } = branchData;
+
+    // التحقق من البيانات المطلوبة
+    if (!name) {
+      return { success: false, error: 'اسم الفرع مطلوب' };
+    }
+
+    // التحقق من عدم وجود فرع بنفس الاسم للمستخدم
+    const existingBranch = await Branch.findOne({ 
+      name, 
+      userId: session.user.id 
+    });
+    
+    if (existingBranch) {
+      return { success: false, error: 'يوجد فرع بهذا الاسم مسبقاً' };
+    }
+
+    // إنشاء الفرع الجديد
+    const newBranch = await Branch.create({
+      name,
+      location,
+      userId: session.user.id
+    });
+
+    // تحويل إلى plain object
+    const plainBranch = {
+      _id: newBranch._id.toString(),
+      name: newBranch.name,
+      location: newBranch.location,
+      userId: newBranch.userId.toString(),
+      createdAt: newBranch.createdAt,
+      updatedAt: newBranch.updatedAt
+    };
+
+    revalidatePath('/subscriber/branches');
+    
+    return { success: true, branch: plainBranch };
+
+  } catch (error) {
+    console.error('خطأ في إضافة الفرع:', error);
+    return { success: false, error: 'حدث خطأ في النظام' };
   }
-        if (!currentUser || currentUser.role !== 'subscriber') {
-            throw new Error("403 - غير مصرح لك");
-        }
-        
-        const validation = branchSchema.safeParse(data);
-        if (!validation.success) {
-            throw new Error(validation.error.errors[0].message);
-        }
-        
-        await connectToDB();
-
-        // التحقق من عدم تكرار الاسم لنفس المشترك
-        const existingBranch = await Branch.findOne({ 
-            name: validation.data.name, 
-            userId: currentUser._id 
-        });
-        if (existingBranch) {
-            throw new Error("اسم الفرع هذا مستخدم بالفعل");
-        }
-
-        const newBranch = new Branch({
-            ...validation.data,
-            userId: currentUser._id // ربط الفرع بالمشترك
-        });
-        await newBranch.save();
-
-        revalidatePath("/subscriber/branches");
-        revalidatePath("/subscriber/employees"); // لتحديث قائمة الفروع في صفحة الموظفين
-        return { success: true, data: JSON.parse(JSON.stringify(newBranch)) };
-
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
 }
 
-/**
- * دالة لتعديل فرع
- */
-export async function updateBranch(branchId, data) {
-    try {
-        const currentUser = await getCurrentUser();
-        if (!currentUser || currentUser.role !== 'subscriber') {
-            throw new Error("403 - غير مصرح لك");
-        }
-        
-        const validation = branchSchema.safeParse(data);
-        if (!validation.success) {
-            throw new Error(validation.error.errors[0].message);
-        }
-        
-        await connectToDB();
-
-        // البحث عن الفرع والتأكد أنه ملك للمستخدم
-        const branch = await Branch.findOne({ _id: branchId, userId: currentUser._id });
-        if (!branch) {
-            throw new Error("404 - الفرع غير موجود أو لا تملكه");
-        }
-
-        // التحقق من تكرار الاسم (باستثناء الفرع الحالي)
-        const existingBranch = await Branch.findOne({ 
-            name: validation.data.name, 
-            userId: currentUser._id,
-            _id: { $ne: branchId } // $ne = Not Equal
-        });
-        if (existingBranch) {
-            throw new Error("اسم الفرع هذا مستخدم بالفعل لفرع آخر");
-        }
-
-        branch.name = validation.data.name;
-        branch.location = validation.data.location;
-        await branch.save();
-        
-        revalidatePath("/subscriber/branches");
-        revalidatePath("/subscriber/employees");
-        return { success: true, data: JSON.parse(JSON.stringify(branch)) };
-
-    } catch (error) {
-        return { success: false, error: error.message };
+// تحديث فرع (للاستخدام من Server Actions)
+export async function updateBranchForm(formData) {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session || session.user.role !== 'subscriber') {
+      return { success: false, error: 'غير مصرح لك بهذا الإجراء' };
     }
+
+    const branchId = formData.get('branchId');
+    const name = formData.get('name');
+    const location = formData.get('location') || '';
+
+    // التحقق من البيانات المطلوبة
+    if (!branchId || !name) {
+      return { success: false, error: 'البيانات المطلوبة مفقودة' };
+    }
+
+    // التحقق من ملكية الفرع
+    const branch = await Branch.findOne({ 
+      _id: branchId, 
+      userId: session.user.id 
+    });
+    
+    if (!branch) {
+      return { success: false, error: 'الفرع غير موجود أو غير مصرح لك بتعديله' };
+    }
+
+    // التحقق من عدم وجود فرع آخر بنفس الاسم
+    const existingBranch = await Branch.findOne({ 
+      name, 
+      userId: session.user.id,
+      _id: { $ne: branchId }
+    });
+    
+    if (existingBranch) {
+      return { success: false, error: 'يوجد فرع آخر بهذا الاسم' };
+    }
+
+    // تحديث الفرع
+    const updatedBranch = await Branch.findByIdAndUpdate(branchId, {
+      name,
+      location
+    }, { new: true });
+
+    // تحويل إلى plain object
+    const plainBranch = {
+      _id: updatedBranch._id.toString(),
+      name: updatedBranch.name,
+      location: updatedBranch.location,
+      userId: updatedBranch.userId.toString(),
+      createdAt: updatedBranch.createdAt,
+      updatedAt: updatedBranch.updatedAt
+    };
+
+    revalidatePath('/subscriber/branches');
+    
+    return { success: true, branch: plainBranch, message: 'تم تحديث الفرع بنجاح' };
+
+  } catch (error) {
+    console.error('خطأ في تحديث الفرع:', error);
+    return { success: false, error: 'حدث خطأ في النظام' };
+  }
 }
 
-/**
- * دالة لحذف فرع
- */
+// تحديث فرع (للاستخدام من Client Components)
+export async function updateBranch(branchId, branchData) {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session || session.user.role !== 'subscriber') {
+      return { success: false, error: 'غير مصرح لك بهذا الإجراء' };
+    }
+
+    const { name, location = '' } = branchData;
+
+    // التحقق من البيانات المطلوبة
+    if (!branchId || !name) {
+      return { success: false, error: 'البيانات المطلوبة مفقودة' };
+    }
+
+    // التحقق من ملكية الفرع
+    const branch = await Branch.findOne({ 
+      _id: branchId, 
+      userId: session.user.id 
+    });
+    
+    if (!branch) {
+      return { success: false, error: 'الفرع غير موجود أو غير مصرح لك بتعديله' };
+    }
+
+    // التحقق من عدم وجود فرع آخر بنفس الاسم
+    const existingBranch = await Branch.findOne({ 
+      name, 
+      userId: session.user.id,
+      _id: { $ne: branchId }
+    });
+    
+    if (existingBranch) {
+      return { success: false, error: 'يوجد فرع آخر بهذا الاسم' };
+    }
+
+    // تحديث الفرع
+    const updatedBranch = await Branch.findByIdAndUpdate(branchId, {
+      name,
+      location
+    }, { new: true });
+
+    // تحويل إلى plain object
+    const plainBranch = {
+      _id: updatedBranch._id.toString(),
+      name: updatedBranch.name,
+      location: updatedBranch.location,
+      userId: updatedBranch.userId.toString(),
+      createdAt: updatedBranch.createdAt,
+      updatedAt: updatedBranch.updatedAt
+    };
+
+    revalidatePath('/subscriber/branches');
+    
+    return { success: true, branch: plainBranch };
+
+  } catch (error) {
+    console.error('خطأ في تحديث الفرع:', error);
+    return { success: false, error: 'حدث خطأ في النظام' };
+  }
+}
+
+// حذف فرع
 export async function deleteBranch(branchId) {
-    try {
-        const currentUser = await getCurrentUser();
-        if (!currentUser || currentUser.role !== 'subscriber') {
-            throw new Error("403 - غير مصرح لك");
-        }
-        
-        await connectToDB();
-        
-        // 1. التأكد أن الفرع ملك للمستخدم
-        const branch = await Branch.findOne({ _id: branchId, userId: currentUser._id });
-        if (!branch) {
-            throw new Error("404 - الفرع غير موجود أو لا تملكه");
-        }
-
-        // 2. (الأمان) التأكد عدم وجود موظفين مرتبطين بهذا الفرع
-        const employeeCount = await User.countDocuments({ 
-            branchId: branchId,
-            mainAccountId: currentUser._id 
-        });
-        
-        if (employeeCount > 0) {
-            throw new Error(`لا يمكن حذف الفرع. هناك ${employeeCount} موظف(ين) مرتبطين به.`);
-        }
-
-        // 3. الحذف
-        await Branch.deleteOne({ _id: branchId, userId: currentUser._id });
-
-        revalidatePath("/subscriber/branches");
-        revalidatePath("/subscriber/employees");
-        return { success: true };
-
-    } catch (error) {
-        return { success: false, error: error.message };
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session || session.user.role !== 'subscriber') {
+      return { success: false, error: 'غير مصرح لك بهذا الإجراء' };
     }
+
+    // التحقق من ملكية الفرع
+    const branch = await Branch.findOne({ 
+      _id: branchId, 
+      userId: session.user.id 
+    });
+    
+    if (!branch) {
+      return { success: false, error: 'الفرع غير موجود أو غير مصرح لك بحذفه' };
+    }
+
+    // يمكن إضافة فحص للتأكد من عدم وجود بيانات مرتبطة بالفرع
+    // مثل المستخدمين أو المخازن أو الفواتير
+
+    // حذف الفرع
+    await Branch.findByIdAndDelete(branchId);
+
+    revalidatePath('/subscriber/branches');
+    
+    return { success: true, message: 'تم حذف الفرع بنجاح' };
+
+  } catch (error) {
+    console.error('خطأ في حذف الفرع:', error);
+    return { success: false, error: 'حدث خطأ في النظام' };
+  }
+}
+
+// جلب فروع المستخدم
+export async function getUserBranches() {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session) {
+      throw new Error('يجب تسجيل الدخول أولاً');
+    }
+
+    const branches = await Branch.find({ userId: session.user.id })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return { success: true, branches };
+
+  } catch (error) {
+    console.error('خطأ في جلب الفروع:', error);
+    return { success: false, message: error.message };
+  }
+}
+
+// جلب فروع المستخدم (اسم بديل)
+export async function getMyBranches() {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session) {
+      return { success: false, error: 'يجب تسجيل الدخول أولاً' };
+    }
+
+    const branches = await Branch.find({ userId: session.user.id })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return { success: true, data: branches };
+
+  } catch (error) {
+    console.error('خطأ في جلب الفروع:', error);
+    return { success: false, error: 'حدث خطأ في النظام' };
+  }
 }

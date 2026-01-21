@@ -8,10 +8,20 @@ import { ArrowRight, Calendar, User, FileText, CreditCard, Box } from "lucide-re
 
 // دالة مساعدة لتنسيق العملة
 const formatCurrency = (amount, currency = 'EGP') => {
-    return new Intl.NumberFormat('ar-EG', {
-        style: 'currency',
-        currency: currency,
-    }).format(amount);
+    // التحقق من صحة رمز العملة
+    if (!currency || currency.trim() === '') {
+        currency = 'EGP';
+    }
+    
+    try {
+        return new Intl.NumberFormat('ar-EG', {
+            style: 'currency',
+            currency: currency,
+        }).format(amount);
+    } catch (error) {
+        // في حالة فشل تنسيق العملة، نعرض الرقم مع رمز العملة
+        return `${Number(amount).toLocaleString('ar-EG')} ${currency}`;
+    }
 };
 
 // دالة مساعدة لتنسيق التاريخ
@@ -164,9 +174,9 @@ export default async function InvoiceDetailPage({ params }) {
                                                 <td className="py-3 px-4 text-gray-400">{index + 1}</td>
                                                 <td className="py-3 px-4 font-medium text-gray-900">{item.name}</td>
                                                 <td className="py-3 px-4 text-center text-gray-600">{item.quantity}</td>
-                                                <td className="py-3 px-4 text-center text-gray-600">{formatCurrency(item.price, '')}</td>
+                                                <td className="py-3 px-4 text-center text-gray-600">{formatCurrency(item.price, invoice.currencyCode)}</td>
                                                 <td className="py-3 px-4 text-left font-bold text-gray-900">
-                                                    {formatCurrency(item.price * item.quantity, '')}
+                                                    {formatCurrency(item.price * item.quantity, invoice.currencyCode)}
                                                 </td>
                                             </tr>
                                         ))}

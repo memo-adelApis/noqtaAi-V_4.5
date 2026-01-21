@@ -8,7 +8,7 @@ const itemSchema = new mongoose.Schema({
   quantity: { type: Number, required: true, min: 1 },
   total: { type: Number, default: 0 },
   storeId: { type: mongoose.Schema.Types.ObjectId, ref: "Store" },
-  unit: { type: mongoose.Schema.Types.ObjectId, ref: "Units" },
+  unit: { type: mongoose.Schema.Types.ObjectId, ref: "Unit" },
 
 
 }, { _id: false });
@@ -16,7 +16,7 @@ const itemSchema = new mongoose.Schema({
 // ------------------- Installment Schema -------------------
 // (لا تغيير هنا - نفس الكود السابق)
 const installmentSchema = new mongoose.Schema({
-  productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+  productId: { type: mongoose.Schema.Types.ObjectId, ref: "Item" },
   sku: { type: String }, // نحتفظ بالـ SKU هنا أيضاً للبحث السريع
   dueDate: { type: Date, required: true },
   amount: { type: Number, required: true, min: 0 },
@@ -25,8 +25,10 @@ const installmentSchema = new mongoose.Schema({
     enum: ["pending", "paid", "overdue"],
     default: "pending"
   },
-  paidDate: { type: Date }
-}, { _id: false });
+  paidDate: { type: Date },
+  paidAmount: { type: Number, default: 0 },
+  updatedAt: { type: Date, default: Date.now }
+});
 
 // ------------------- Payment Schema -------------------
 // (لا تغيير هنا - نفس الكود السابق)
@@ -41,7 +43,7 @@ const paymentSchema = new mongoose.Schema({
   notes: { type: String, default: "" },
   reference: { type: String, default: "" },
   status: { type: String, enum: ["pending", "paid"], default: "pending" }
-}, { _id: false });
+});
 
 // ------------------- Invoice Schema (التعديل هنا) -------------------
 const invoiceSchema = new mongoose.Schema({

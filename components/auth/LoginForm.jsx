@@ -5,7 +5,7 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from "next/dynamic";
-import { BarChart3, Mail, Lock, Loader2, ArrowLeft } from "lucide-react";
+import { BarChart3, Mail, Lock, Loader2, Chrome } from "lucide-react";
 
 // استيراد Toast بشكل ديناميكي
 const ToastContainer = dynamic(
@@ -21,11 +21,11 @@ export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    // toast.loading('جاري تسجيل الدخول...', { toastId: 'login' });
 
     try {
       const result = await signIn('credentials', {
@@ -33,8 +33,6 @@ export default function LoginForm() {
         email,
         password,
       });
-
-      toast.dismiss('login');
 
       if (!result || result.error) {
         toast.error(result?.error || 'البريد الإلكتروني أو كلمة المرور غير صحيحة.');
@@ -46,11 +44,27 @@ export default function LoginForm() {
       router.push('/'); 
       
     } catch (error) {
-      toast.dismiss('login');
       toast.error('حدث خطأ غير متوقع أثناء تسجيل الدخول.');
       console.error(error);
       setIsLoading(false);
     }
+  };
+
+  const handleGoogleSignIn = async () => {
+    // تعطيل مؤقت - يمكن تفعيله لاحقاً
+    toast.info("هذا الخيار غير متوفر حالياً. يرجى استخدام البريد الإلكتروني وكلمة المرور.");
+    return;
+    
+    /* 
+    // الكود الأصلي - سيتم تفعيله عند إعداد Google OAuth
+    setIsGoogleLoading(true);
+    try {
+      await signIn("google", { callbackUrl: "/" });
+    } catch (error) {
+      toast.error("حدث خطأ أثناء تسجيل الدخول بواسطة Google");
+      setIsGoogleLoading(false);
+    }
+    */
   };
 
   return (
@@ -76,6 +90,36 @@ export default function LoginForm() {
           </p>
         </div>
 
+        {/* زر Google */}
+        <button
+          type="button"
+          onClick={handleGoogleSignIn}
+          disabled={isGoogleLoading || isLoading}
+          className="w-full flex justify-center items-center py-3.5 px-4 border border-gray-700 rounded-xl text-sm font-medium text-white bg-[#0a0b0f] hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all disabled:opacity-70 disabled:cursor-not-allowed mb-6"
+        >
+          {isGoogleLoading ? (
+            <>
+              <Loader2 className="animate-spin ml-2 h-5 w-5" />
+              جاري الاتصال بـ Google...
+            </>
+          ) : (
+            <>
+              <Chrome className="ml-2 h-5 w-5 text-red-500" />
+              تسجيل الدخول بواسطة Google
+            </>
+          )}
+        </button>
+
+        {/* فاصل */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-800"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-4 bg-[#12141c] text-gray-500">أو</span>
+          </div>
+        </div>
+
         {/* النموذج */}
         <form onSubmit={handleSubmit} className="space-y-5">
           
@@ -98,7 +142,7 @@ export default function LoginForm() {
                 required
                 placeholder="name@example.com"
                 className="w-full bg-[#0a0b0f] border border-gray-800 text-white rounded-xl py-3.5 pr-12 pl-4 placeholder:text-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-inner"
-                disabled={isLoading}
+                disabled={isLoading || isGoogleLoading}
               />
             </div>
           </div>
@@ -124,7 +168,7 @@ export default function LoginForm() {
                 required
                 placeholder="••••••••"
                 className="w-full bg-[#0a0b0f] border border-gray-800 text-white rounded-xl py-3.5 pr-12 pl-4 placeholder:text-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-inner"
-                disabled={isLoading}
+                disabled={isLoading || isGoogleLoading}
               />
             </div>
           </div>
@@ -132,7 +176,7 @@ export default function LoginForm() {
           {/* زر الدخول */}
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || isGoogleLoading}
             className="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-xl shadow-lg shadow-indigo-600/20 text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed mt-2"
           >
             {isLoading ? (

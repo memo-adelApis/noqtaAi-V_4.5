@@ -8,7 +8,7 @@ export default function AdminLayout({ children }) {
       <AdminSidebar />
 
       {/* المحتوى الرئيسي */}
-      <main className="flex-1 p-8 overflow-y-auto">
+      <main className="flex-1 p-4 md:p-8 overflow-y-auto pt-16 md:pt-8">
         {children}
       </main>
     </div>
