@@ -4,7 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import { connectToDB } from "@/utils/database";
 import User from "@/models/User";
 import { z } from "zod";
-import { LoginLogService } from "../../../../utils/notificationService";
+import { LoginLogService } from "@/utils/notificationService";
 
 // التحقق من صحة المدخلات
 const loginSchema = z.object({

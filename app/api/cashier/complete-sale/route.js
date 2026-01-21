@@ -35,14 +35,11 @@ export async function POST(request) {
                 throw new Error(`الكمية المتوفرة من ${item.name} غير كافية (متوفر: ${product.quantity_Remaining})`);
             }
 
-            // إضافة تصريح صرف معتمد للمنتج
-            await product.sellStock(
-                item.quantity,
-                item.price,
-                null, // سيتم تحديثه بعد إنشاء الفاتورة
-                null, // العميل (إذا وجد)
-                authSession.user.id,
-                `بيع نقطة البيع - ${new Date().toLocaleString('ar-EG')}`
+            // خصم الكمية
+            await Item.findByIdAndUpdate(
+                item._id,
+                { $inc: { quantity_Remaining: -item.quantity } },
+                { session }
             );
         }
 
@@ -75,20 +72,6 @@ export async function POST(request) {
             branchId: authSession.user.branchId,
             createdBy: authSession.user.id
         }], { session });
-
-        // تحديث تصاريح الصرف بمعرف الفاتورة
-        for (const item of items) {
-            const product = await Item.findById(item._id).session(session);
-            if (product && product.exchange_permits.length > 0) {
-                // البحث عن آخر تصريح صرف وتحديثه
-                const lastPermit = product.exchange_permits[product.exchange_permits.length - 1];
-                if (!lastPermit.invoiceId) {
-                    lastPermit.invoiceId = invoice[0]._id;
-                    lastPermit.customerId = customer?._id || null;
-                    await product.save({ session });
-                }
-            }
-        }
 
         await session.commitTransaction();
 
