@@ -3,8 +3,8 @@
 import Notification from "@/models/Notification";
 import User from "@/models/User";
 import { connectToDB } from "@/utils/database";
+import { NotificationService } from "@/utils/notificationService";
 import { revalidatePath } from "next/cache";
-import { NotificationService } from "../../utils/notificationService";
 
 // دالة إرسال الإشعارات
 export async function sendNotification(formData) {
